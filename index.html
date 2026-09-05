@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>NEON RUMBLE - Retro Arcade Fighter</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Rajdhani:wght@600;700;800&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div id="arcade-cabinet">
+    <!-- Arcade Marquee / Header -->
+    <header id="arcade-header">
+      <div class="header-led red"></div>
+      <div class="marquee-title">★ NEON RUMBLE: ASTRAL CLASH ★</div>
+      <div class="header-led green"></div>
+    </header>
+
+    <!-- Screen Bezel with CRT Simulation -->
+    <div id="screen-container" class="crt-enabled scanlines-enabled">
+      <canvas id="game-canvas" width="960" height="540"></canvas>
+      
+      <!-- Overlay CRT filters -->
+      <div id="crt-scanlines"></div>
+      <div id="crt-curvature"></div>
+      <div id="crt-vignette"></div>
+      <div id="crt-flicker"></div>
+
+      <!-- On-Screen Virtual Touch Controls for Mobile / Tablet -->
+      <div id="touch-controls">
+        <!-- D-Pad (Left Side) -->
+        <div id="touch-dpad">
+          <button id="btn-touch-up" class="dpad-btn dpad-up" data-key="up" aria-label="Jump">▲</button>
+          <div class="dpad-middle">
+            <button id="btn-touch-left" class="dpad-btn dpad-left" data-key="left" aria-label="Left">◀</button>
+            <div class="dpad-center"></div>
+            <button id="btn-touch-right" class="dpad-btn dpad-right" data-key="right" aria-label="Right">▶</button>
+          </div>
+          <button id="btn-touch-down" class="dpad-btn dpad-down" data-key="down" aria-label="Crouch">▼</button>
+        </div>
+
+        <!-- Action Buttons (Right Side) -->
+        <div id="touch-actions">
+          <div class="action-row top-row">
+            <button id="btn-touch-block" class="action-btn btn-block" data-key="block">GUARD</button>
+            <button id="btn-touch-special" class="action-btn btn-special" data-key="special">SPECIAL</button>
+            <button id="btn-touch-super" class="action-btn btn-super" data-key="super">
+              <span class="super-label">SUPER</span>
+              <span id="touch-super-cooldown" class="cooldown-text">READY</span>
+            </button>
+          </div>
+          <div class="action-row main-attacks">
+            <button id="btn-touch-light" class="action-btn btn-light" data-key="light">LIGHT</button>
+            <button id="btn-touch-heavy" class="action-btn btn-heavy" data-key="heavy">HEAVY</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- First-Time Combat Tutorial Modal -->
+      <div id="tutorial-modal" class="hidden">
+        <div class="tutorial-card">
+          <div class="tutorial-header">
+            <span class="tutorial-tag">★ COMBAT TRAINING ★</span>
+            <h2 id="tutorial-title">HERO ARDRA: BASIC MOVEMENT</h2>
+          </div>
+          <div class="tutorial-body">
+            <div id="tutorial-step-content" class="step-content">
+              <!-- Dynamically populated by UIManager -->
+            </div>
+            <div class="tutorial-steps-dots">
+              <span class="dot active" data-step="0"></span>
+              <span class="dot" data-step="1"></span>
+              <span class="dot" data-step="2"></span>
+              <span class="dot" data-step="3"></span>
+            </div>
+          </div>
+          <div class="tutorial-footer">
+            <button id="btn-tutorial-prev" class="tut-btn">◀ PREV</button>
+            <button id="btn-tutorial-next" class="tut-btn">NEXT ▶</button>
+            <button id="btn-tutorial-start" class="tut-btn tut-start-btn pulse">START BATTLE! ⚔️</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Audio Prompt for Browser Autoplay Policy -->
+      <div id="audio-prompt" class="hidden">
+        <div class="audio-prompt-content">
+          <div class="prompt-icon">⚡</div>
+          <h2>TOUCH TO START FIGHT</h2>
+          <p>Tap anywhere to initialize Neo-Arcade Audio & Controls</p>
+          <button id="audio-start-btn" class="arcade-btn pulse">START GAME</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Arcade Bezel Footer & Quick Controls Reference -->
+    <footer id="arcade-footer">
+      <div class="footer-status">
+        <span class="status-badge" id="system-status">NEO-SYSTEM 1998 READY</span>
+        <span class="status-badge" id="fps-counter">60 FPS</span>
+      </div>
+      <div class="footer-controls">
+        <div class="control-col">
+          <strong>CONTROLS:</strong> [ON-SCREEN TOUCH] or [WASD / ARROWS] Move &bull; [F / J] Light &bull; [G / K] Heavy &bull; [H / L] Special &bull; [T / O] Super &bull; [R / ;] Guard
+        </div>
+        <div class="control-col actions">
+          <button id="btn-touch-toggle" class="bezel-btn" title="Toggle On-Screen Touch Controls">📱 TOUCH: ON</button>
+          <button id="btn-fullscreen" class="bezel-btn" title="Toggle Fullscreen">⛶ FULLSCREEN</button>
+          <button id="btn-crt-toggle" class="bezel-btn" title="Toggle CRT Effects">📺 CRT: ON</button>
+          <button id="btn-pause-toggle" class="bezel-btn" title="Pause Game [ESC]">⏸ PAUSE</button>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <!-- Game Scripts (Namespaced for 100% compatibility with direct file:// opening and http://) -->
+  <script src="js/core/Storage.js"></script>
+  <script src="js/audio/SoundSynth.js"></script>
+  <script src="js/audio/MusicSynth.js"></script>
+  <script src="js/combat/Hitbox.js"></script>
+  <script src="js/combat/AttackData.js"></script>
+  <script src="js/combat/ComboManager.js"></script>
+  <script src="js/rendering/ParticleSystem.js"></script>
+  <script src="js/rendering/FighterRenderer.js"></script>
+  <script src="js/fighters/Projectile.js"></script>
+  <script src="js/fighters/Fighter.js"></script>
+  <script src="js/fighters/Ardra.js"></script>
+  <script src="js/fighters/Rex.js"></script>
+  <script src="js/fighters/Volt.js"></script>
+  <script src="js/fighters/Titan.js"></script>
+  <script src="js/stages/NeonAlley.js"></script>
+  <script src="js/stages/AbandonedArcade.js"></script>
+  <script src="js/stages/SkylineRooftop.js"></script>
+  <script src="js/stages/AstralCore.js"></script>
+  <script src="js/stages/StageManager.js"></script>
+  <script src="js/core/Camera.js"></script>
+  <script src="js/core/InputManager.js"></script>
+  <script src="js/ui/UIManager.js"></script>
+  <script src="js/ui/MenuScreens.js"></script>
+  <script src="js/core/GameState.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
