@@ -17,9 +17,15 @@ window.NeonRumble = window.NeonRumble || {};
       this.color = '#fff';
       this.life = 0;
       this.maxLife = 20;
-      this.type = 'spark'; // 'spark', 'dust', 'shockwave', 'slash', 'text', 'line'
+      this.type = 'spark'; // 'spark', 'dust', 'shockwave', 'slash', 'text', 'line', 'starburst', 'slash_beam'
       this.text = '';
       this.radius = 0;
+      this.targetRadius = 0;
+      this.radius2 = 0;
+      this.targetRadius2 = 0;
+      this.points = 12;
+      this.angle = 0;
+      this.length = 80;
       this.alpha = 1.0;
     }
 
@@ -147,6 +153,59 @@ window.NeonRumble = window.NeonRumble || {};
       p.life = p.maxLife;
     }
 
+    emitComicStarburst(x, y, maxRadius = 38) {
+      const p = this.getParticle();
+      p.active = true;
+      p.type = 'starburst';
+      p.x = x;
+      p.y = y;
+      p.vx = (Math.random() - 0.5) * 1.5;
+      p.vy = (Math.random() - 0.5) * 1.5;
+      p.gravity = 0;
+      p.radius = 8;
+      p.targetRadius = maxRadius;
+      p.radius2 = 4;
+      p.targetRadius2 = maxRadius * 0.42;
+      p.points = 12 + Math.floor(Math.random() * 4);
+      p.angle = Math.random() * Math.PI;
+      p.maxLife = 12;
+      p.life = p.maxLife;
+
+      // Burst 4 mini comic spark flecks
+      for (let i = 0; i < 4; i++) {
+        const f = this.getParticle();
+        f.active = true;
+        f.type = 'spark';
+        f.x = x + (Math.random() - 0.5) * 10;
+        f.y = y + (Math.random() - 0.5) * 10;
+        const ang = Math.random() * Math.PI * 2;
+        const spd = Math.random() * 6 + 4;
+        f.vx = Math.cos(ang) * spd;
+        f.vy = Math.sin(ang) * spd;
+        f.gravity = 0.2;
+        f.size = Math.random() * 4 + 3;
+        f.color = Math.random() > 0.5 ? '#ffcc00' : '#ff4400';
+        f.maxLife = 10;
+        f.life = f.maxLife;
+      }
+    }
+
+    emitDiagonalSlashBeam(x, y, angle = -0.7) {
+      const p = this.getParticle();
+      p.active = true;
+      p.type = 'slash_beam';
+      p.x = x;
+      p.y = y;
+      p.vx = 0;
+      p.vy = 0;
+      p.gravity = 0;
+      p.angle = angle;
+      p.length = 150;
+      p.color = '#ff9900';
+      p.maxLife = 10;
+      p.life = p.maxLife;
+    }
+
     emitAfterimage(fighter) {
       this.afterimages.push({
         x: fighter.x,
@@ -181,6 +240,10 @@ window.NeonRumble = window.NeonRumble || {};
 
         if (p.type === 'shockwave') {
           p.radius += (p.targetRadius - p.radius) * 0.25;
+        } else if (p.type === 'starburst') {
+          p.radius += (p.targetRadius - p.radius) * 0.35;
+          p.radius2 += (p.targetRadius2 - p.radius2) * 0.35;
+          p.angle += 0.05;
         }
       }
 
@@ -243,6 +306,67 @@ window.NeonRumble = window.NeonRumble || {};
           ctx.textAlign = 'center';
           ctx.fillText(p.text, Math.floor(p.x), Math.floor(p.y));
           ctx.shadowBlur = 0;
+        } else if (p.type === 'starburst') {
+          // Multi-pointed comic blast star with bold comic outline and gradient fill
+          ctx.save();
+          ctx.translate(p.x, p.y);
+          ctx.rotate(p.angle);
+          ctx.beginPath();
+          const pts = p.points || 12;
+          for (let k = 0; k < pts * 2; k++) {
+            const rad = k % 2 === 0 ? p.radius : p.radius2;
+            const a = (k * Math.PI) / pts;
+            const sx = Math.cos(a) * rad;
+            const sy = Math.sin(a) * rad;
+            if (k === 0) ctx.moveTo(sx, sy);
+            else ctx.lineTo(sx, sy);
+          }
+          ctx.closePath();
+          // Bold black comic outline
+          ctx.lineWidth = 4;
+          ctx.strokeStyle = '#000000';
+          ctx.stroke();
+          // Inner fiery orange-yellow fill
+          const starGrad = ctx.createRadialGradient(0, 0, 2, 0, 0, p.radius);
+          starGrad.addColorStop(0, '#ffffff');
+          starGrad.addColorStop(0.35, '#ffea00');
+          starGrad.addColorStop(0.8, '#ff6600');
+          starGrad.addColorStop(1, '#ff2200');
+          ctx.fillStyle = starGrad;
+          ctx.fill();
+          ctx.restore();
+        } else if (p.type === 'slash_beam') {
+          // Angled comic electric slash streak
+          ctx.save();
+          ctx.translate(p.x, p.y);
+          ctx.rotate(p.angle);
+          const halfLen = (p.length * (0.4 + (1 - progress) * 0.6)) / 2;
+          // Fiery orange/red outer slash
+          ctx.lineWidth = Math.max(2, 8 * progress);
+          ctx.strokeStyle = '#ff3300';
+          ctx.lineCap = 'round';
+          ctx.beginPath();
+          ctx.moveTo(-halfLen, 0);
+          ctx.lineTo(halfLen, 0);
+          ctx.stroke();
+          // Hot yellow-white core
+          ctx.lineWidth = Math.max(1, 3 * progress);
+          ctx.strokeStyle = '#ffffff';
+          ctx.beginPath();
+          ctx.moveTo(-halfLen * 0.85, 0);
+          ctx.lineTo(halfLen * 0.85, 0);
+          ctx.stroke();
+          // Diagonal comic speed ticks
+          ctx.lineWidth = 1.5;
+          ctx.strokeStyle = '#ffcc00';
+          for (let k = -2; k <= 2; k++) {
+            const tx = k * (halfLen / 3);
+            ctx.beginPath();
+            ctx.moveTo(tx - 6, -8);
+            ctx.lineTo(tx + 6, 8);
+            ctx.stroke();
+          }
+          ctx.restore();
         }
       }
 

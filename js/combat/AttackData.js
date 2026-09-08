@@ -43,6 +43,23 @@ window.NeonRumble = window.NeonRumble || {};
       level: 'HEAVY',
       hitbox: new Box(22, -65, 52, 38, 'hit')
     },
+    KICK: {
+      name: 'Thrust Kick',
+      startup: 6,
+      active: 5,
+      recovery: 12,
+      damage: 12,
+      chipDamage: 2,
+      knockback: { x: 5.5, y: -1.5 },
+      hitstun: 20,
+      blockstun: 12,
+      freezeFrames: 6,
+      meterGainAttacker: 10,
+      meterGainDefender: 4,
+      property: 'MID',
+      level: 'MEDIUM',
+      hitbox: new Box(26, -48, 48, 28, 'hit')
+    },
     CROUCH_LIGHT: {
       name: 'Crouch Light',
       startup: 5,

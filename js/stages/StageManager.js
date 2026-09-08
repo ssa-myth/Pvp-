@@ -7,8 +7,8 @@ window.NeonRumble = window.NeonRumble || {};
   class StageManager {
     constructor() {
       this.stages = null;
-      this.stageKeys = ['NeonAlley', 'AbandonedArcade', 'SkylineRooftop', 'AstralCore'];
-      this.currentStageKey = 'NeonAlley';
+      this.stageKeys = ['GraffitiStrip', 'CyberJunk', 'NeonDocks', 'DemonShrine', 'AstralCore', 'NeonAlley', 'AbandonedArcade', 'SkylineRooftop'];
+      this.currentStageKey = 'GraffitiStrip';
       this._currentStage = null;
     }
 
@@ -24,10 +24,14 @@ window.NeonRumble = window.NeonRumble || {};
     ensureStages() {
       if (!this.stages) {
         this.stages = {
+          GraffitiStrip: new window.NeonRumble.GraffitiStrip(),
+          CyberJunk: new window.NeonRumble.CyberJunk(),
+          NeonDocks: new window.NeonRumble.NeonDocks(),
+          DemonShrine: new window.NeonRumble.DemonShrine(),
+          AstralCore: new window.NeonRumble.AstralCore(),
           NeonAlley: new window.NeonRumble.NeonAlley(),
           AbandonedArcade: new window.NeonRumble.AbandonedArcade(),
-          SkylineRooftop: new window.NeonRumble.SkylineRooftop(),
-          AstralCore: new window.NeonRumble.AstralCore()
+          SkylineRooftop: new window.NeonRumble.SkylineRooftop()
         };
         this._currentStage = this.stages[this.currentStageKey];
       }
@@ -52,10 +56,10 @@ window.NeonRumble = window.NeonRumble || {};
       return this.stages[key] || this.currentStage;
     }
 
-    draw(ctx, camera) {
+    draw(ctx, camera, round = 1) {
       this.ensureStages();
       if (this.currentStage) {
-        this.currentStage.draw(ctx, camera);
+        this.currentStage.draw(ctx, camera, round);
       }
     }
   }

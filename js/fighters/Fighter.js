@@ -81,7 +81,9 @@ window.NeonRumble = window.NeonRumble || {};
     }
 
     getHurtbox() {
-      if (this.state === 'CROUCH' || this.state === 'ATTACK_CROUCH_LIGHT' || this.state === 'ATTACK_CROUCH_HEAVY') {
+      if (this.state === 'KNOCKDOWN') {
+        return new Box(-28, -18, 56, 18, 'hurt').getWorldBounds(this.x, this.y, this.facing);
+      } else if (this.state === 'CROUCH' || this.state === 'LAND' || this.state === 'ATTACK_CROUCH_LIGHT' || this.state === 'ATTACK_CROUCH_HEAVY') {
         return new Box(-20, -52, 40, 52, 'hurt').getWorldBounds(this.x, this.y, this.facing);
       } else if (!this.isGrounded) {
         return new Box(-18, -75, 36, 65, 'hurt').getWorldBounds(this.x, this.y, this.facing);
@@ -192,9 +194,13 @@ window.NeonRumble = window.NeonRumble || {};
           const sfx = window.NeonRumble.SoundSynth;
           if (sfx) sfx.playLand();
 
-          if (this.state === 'JUMP') {
-            this.setState('IDLE');
+          // Smooth transition to 5-frame LAND squash
+          if (!this.state.startsWith('ATTACK_') && this.state !== 'KNOCKDOWN') {
+            this.setState('LAND');
           }
+        } else if (this.vy > 1.2 && (this.state === 'JUMP' || this.state === 'IDLE')) {
+          // Downward descent airborne state
+          this.setState('FALL');
         }
       } else {
         this.x += this.vx;
@@ -210,6 +216,7 @@ window.NeonRumble = window.NeonRumble || {};
         this.state === 'HIT_HEAVY' ||
         this.state === 'KNOCKDOWN' ||
         this.state === 'GET_UP' ||
+        this.state === 'LAND' ||
         this.state === 'VICTORY' ||
         this.state === 'DEFEAT'
       );
@@ -230,14 +237,19 @@ window.NeonRumble = window.NeonRumble || {};
 
           if (this.stateTimer >= totalFrames) {
             this.currentAttack = null;
-            this.setState(this.isGrounded ? 'IDLE' : 'JUMP');
+            this.setState(this.isGrounded ? 'IDLE' : 'FALL');
           }
         } else {
           this.setState('IDLE');
         }
       }
 
-      // 2. Hitstun & Blockstun
+      // 2. Landing Squash Recovery (5 frames)
+      else if (this.state === 'LAND' && this.stateTimer >= 5) {
+        this.setState('IDLE');
+      }
+
+      // 3. Hitstun & Blockstun
       else if (this.state === 'HIT_LIGHT' && this.stateTimer >= 14) {
         this.setState('IDLE');
       } else if (this.state === 'HIT_HEAVY' && this.stateTimer >= 24) {
@@ -246,7 +258,7 @@ window.NeonRumble = window.NeonRumble || {};
         this.setState('IDLE');
       }
 
-      // 3. Knockdown & Recovery
+      // 4. Knockdown & Recovery
       else if (this.state === 'KNOCKDOWN') {
         if (this.stateTimer >= 35) {
           this.setState('GET_UP');
@@ -292,13 +304,17 @@ window.NeonRumble = window.NeonRumble || {};
         return;
       }
 
-      // 4. Light Attack
+      // 4. Light Attack & Kick
       if (input.light) {
         if (!this.isGrounded) {
           this.startAttack('JUMP_LIGHT', AttackData.JUMP_LIGHT);
         } else if (input.down) {
           this.startAttack('ATTACK_CROUCH_LIGHT', AttackData.CROUCH_LIGHT);
+        } else if ((this.facing === 1 && input.right) || (this.facing === -1 && input.left)) {
+          // Forward + Light = Thrust Kick
+          this.startAttack('ATTACK_KICK', AttackData.KICK);
         } else {
+          // Neutral Light = Light Punch / Slash
           this.startAttack('ATTACK_LIGHT', AttackData.LIGHT);
         }
         return;
@@ -334,15 +350,45 @@ window.NeonRumble = window.NeonRumble || {};
         return;
       }
 
-      // 8. Ground Movement (Forward / Backward)
+      // 8. Ground Movement (Forward Walk / Forward Run / Backward Walk)
       if (this.isGrounded) {
-        if (input.right) {
-          this.vx = this.speed;
-          this.setState(this.facing === 1 ? 'WALK_FWD' : 'WALK_BACK');
-        } else if (input.left) {
-          this.vx = -this.speed;
-          this.setState(this.facing === -1 ? 'WALK_FWD' : 'WALK_BACK');
+        const isFwdRight = (this.facing === 1 && input.right);
+        const isFwdLeft = (this.facing === -1 && input.left);
+        const isMovingFwd = isFwdRight || isFwdLeft;
+        const isMovingBack = (this.facing === 1 && input.left) || (this.facing === -1 && input.right);
+
+        // Double-tap forward detection & run input
+        if (this.dashTapTimer > 0) this.dashTapTimer--;
+        const isFwdTap = isMovingFwd && !this.prevMovingFwd;
+        if (isFwdTap) {
+          if (this.dashTapTimer > 0) {
+            this.isDashing = true;
+          } else {
+            this.dashTapTimer = 16;
+          }
+        }
+        this.prevMovingFwd = isMovingFwd;
+        if (input.run) this.isDashing = true;
+
+        if (isMovingFwd) {
+          // Check if running or walking
+          if (this.isDashing) {
+            this.vx = this.facing * this.speed * 1.5;
+            this.setState('RUN');
+            if (this.animTimer % 7 === 0) {
+              const particles = window.NeonRumble.ParticleSystem;
+              if (particles) particles.emitDust(this.x - this.facing * 10, this.y, 2);
+            }
+          } else {
+            this.vx = this.facing * this.speed;
+            this.setState('WALK_FWD');
+          }
+        } else if (isMovingBack) {
+          this.isDashing = false;
+          this.vx = -this.facing * this.speed * 0.85;
+          this.setState('WALK_BACK');
         } else {
+          this.isDashing = false;
           this.setState('IDLE');
         }
       }
@@ -470,8 +516,15 @@ window.NeonRumble = window.NeonRumble || {};
       if (particles) {
         const sparkColor = attack.level === 'SUPER' ? '#ff0055' : (attack.level === 'HEAVY' ? '#ffbb00' : '#ffffaa');
         particles.emitHitSparks(this.x, this.y - 48, attack.level === 'HEAVY' ? 16 : 8, sparkColor);
-        if (attack.level === 'HEAVY' || attack.level === 'SPECIAL') {
+        if (particles.emitComicStarburst) {
+          particles.emitComicStarburst(this.x, this.y - 48, (attack.level === 'HEAVY' || attack.level === 'SUPER') ? 44 : 26);
+        }
+        if (attack.level === 'HEAVY' || attack.level === 'SPECIAL' || attack.level === 'SUPER') {
           particles.emitShockwave(this.x, this.y - 48, 38, sparkColor);
+          if (particles.emitDiagonalSlashBeam) {
+            const angle = (Math.random() > 0.5 ? -1 : 1) * (0.55 + Math.random() * 0.3);
+            particles.emitDiagonalSlashBeam(this.x, this.y - 48, angle);
+          }
         }
       }
 

@@ -29,7 +29,7 @@
       <div id="crt-flicker"></div>
 
       <!-- On-Screen Virtual Touch Controls for Mobile / Tablet -->
-      <div id="touch-controls">
+      <div id="touch-controls" class="touch-hidden">
         <!-- D-Pad (Left Side) -->
         <div id="touch-dpad">
           <button id="btn-touch-up" class="dpad-btn dpad-up" data-key="up" aria-label="Jump">▲</button>
@@ -54,6 +54,155 @@
           <div class="action-row main-attacks">
             <button id="btn-touch-light" class="action-btn btn-light" data-key="light">LIGHT</button>
             <button id="btn-touch-heavy" class="action-btn btn-heavy" data-key="heavy">HEAVY</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Menu Overlay (Fighting EX Layer Style Redesign) -->
+      <div id="main-menu-overlay" class="hidden">
+        <!-- Fiery energetic background layer with dark reds, oranges, smoke, and embers -->
+        <div class="menu-fiery-bg">
+          <div class="fire-gradient-layer"></div>
+          <div class="chainlink-fence-layer"></div>
+          <div class="smoke-haze-layer"></div>
+          <div class="fire-sparks-container">
+            <span class="spark s1"></span>
+            <span class="spark s2"></span>
+            <span class="spark s3"></span>
+            <span class="spark s4"></span>
+            <span class="spark s5"></span>
+            <span class="spark s6"></span>
+            <span class="spark s7"></span>
+            <span class="spark s8"></span>
+          </div>
+        </div>
+
+        <!-- Character Art Showcase Area (Hero Ardra & Gauntlet Silhouette) -->
+        <div class="menu-character-stage">
+          <div class="char-aura"></div>
+          <div class="char-display-group">
+            <div class="char-hero-card">
+              <div class="char-glow-ring"></div>
+              <div class="char-hero-graphic">
+                <span class="hero-name-plate">HERO // ARDRA</span>
+                <span class="hero-title-tag">ASTRAL STORMBLADE</span>
+              </div>
+            </div>
+            <div class="char-rival-card">
+              <div class="rival-graphic">
+                <span class="rival-name-plate">VILLAIN GAUNTLET</span>
+                <span class="rival-title-tag">5 STAGE BOSSES</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Top Header & Corner Badges -->
+        <div class="menu-top-bar">
+          <div class="menu-header-group">
+            <h1 class="menu-main-title">MAIN MENU</h1>
+            <div class="menu-title-glow"></div>
+          </div>
+          <div class="menu-top-corner-badges">
+            <span class="corner-badge system-badge">NEO-SYSTEM 1998 // VER 1.4</span>
+            <div class="bumper-prompts">
+              <span class="bumper-btn"><span class="btn-icon">L1</span> <span class="kb-hint">[Q]</span></span>
+              <span class="bumper-label">TABS</span>
+              <span class="bumper-btn"><span class="btn-icon">R1</span> <span class="kb-hint">[E]</span></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Main Left-Side Beveled Stacked Menu & Right Information Panel -->
+        <div class="menu-content-body">
+          <div class="menu-stack-panel" id="menu-options-list">
+            <button class="menu-btn-item selected" data-index="0" data-opt="HERO CAMPAIGN (ARDRA)">
+              <span class="btn-bevel-cut"></span>
+              <span class="btn-glow-aura"></span>
+              <span class="btn-label">HERO CAMPAIGN (ARDRA)</span>
+              <span class="btn-sub-tag">5 STAGES</span>
+            </button>
+            <button class="menu-btn-item" data-index="1" data-opt="FREE ROAM DOJO (ARDRA)">
+              <span class="btn-bevel-cut"></span>
+              <span class="btn-glow-aura"></span>
+              <span class="btn-label">FREE ROAM DOJO (ARDRA)</span>
+              <span class="btn-sub-tag">8-WAY</span>
+            </button>
+            <button class="menu-btn-item" data-index="2" data-opt="TRAINING MODE">
+              <span class="btn-bevel-cut"></span>
+              <span class="btn-glow-aura"></span>
+              <span class="btn-label">TRAINING MODE</span>
+              <span class="btn-sub-tag">SPARRING</span>
+            </button>
+            <button class="menu-btn-item" data-index="3" data-opt="COMBAT TUTORIAL">
+              <span class="btn-bevel-cut"></span>
+              <span class="btn-glow-aura"></span>
+              <span class="btn-label">COMBAT TUTORIAL</span>
+              <span class="btn-sub-tag">GUIDE</span>
+            </button>
+            <button class="menu-btn-item" data-index="4" data-opt="SETTINGS">
+              <span class="btn-bevel-cut"></span>
+              <span class="btn-glow-aura"></span>
+              <span class="btn-label">SETTINGS</span>
+              <span class="btn-sub-tag">CONFIG</span>
+            </button>
+            <button class="menu-btn-item" data-index="5" data-opt="ARCADE STATS">
+              <span class="btn-bevel-cut"></span>
+              <span class="btn-glow-aura"></span>
+              <span class="btn-label">ARCADE STATS</span>
+              <span class="btn-sub-tag">RECORDS</span>
+            </button>
+          </div>
+
+          <!-- Lower-Right Information Box -->
+          <div class="menu-info-wrapper">
+            <div class="info-header-row">
+              <h2 class="info-title">INFORMATION</h2>
+              <div class="info-bumpers">
+                <span class="bumper-pill">L1</span>
+                <span class="bumper-pill">R1</span>
+              </div>
+            </div>
+            <div class="menu-info-box">
+              <div class="info-thumbnail-slot">
+                <div class="thumb-inner-art">
+                  <div class="thumb-slash-glow"></div>
+                  <div class="thumb-logo">ASTRAL<br>CLASH</div>
+                  <div class="thumb-badge">NEW!</div>
+                </div>
+              </div>
+              <div class="info-text-slot">
+                <h3 class="info-headline">*NEON RUMBLE Service is active!</h3>
+                <p class="info-body">
+                  Hero Ardra has arrived! Master fluid 8-way free movement in the Dojo, or challenge the 5-Stage Progressive Villain Gauntlet.
+                </p>
+                <div class="info-footer-link">
+                  <span class="link-label">Official Combat Portal</span>
+                  <span class="link-url">arcade://neon-rumble/ex-layer</span>
+                </div>
+              </div>
+              <div class="info-carousel-dots">
+                <span class="dot active"></span>
+                <span class="dot"></span>
+                <span class="dot"></span>
+              </div>
+              <div class="info-display-prompt">
+                <span class="btn-triangle">▲</span> Information Display
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bottom Description Ticker & Navigation Controls -->
+        <div class="menu-bottom-bar">
+          <div class="menu-ticker">
+            <span class="ticker-badge">MISSION INFO</span>
+            <span id="menu-description-ticker" class="ticker-text">Battle through the 5-stage progressive villain gauntlet with Hero Ardra.</span>
+          </div>
+          <div class="menu-footer-actions">
+            <span class="action-prompt"><kbd>W</kbd><kbd>S</kbd> or <kbd>▲</kbd><kbd>▼</kbd> Navigate</span>
+            <span class="action-prompt primary"><kbd>ENTER</kbd> or <kbd>F</kbd> Select</span>
+            <span class="action-prompt"><kbd>ESC</kbd> Back</span>
           </div>
         </div>
       </div>
@@ -127,14 +276,25 @@
   <script src="js/fighters/Projectile.js"></script>
   <script src="js/fighters/Fighter.js"></script>
   <script src="js/fighters/Ardra.js"></script>
+  <script src="js/fighters/RedOni.js"></script>
+  <script src="js/fighters/VoltMummy.js"></script>
+  <script src="js/fighters/NoirDoll.js"></script>
+  <script src="js/fighters/JesterGhost.js"></script>
+  <script src="js/fighters/HornedDemon.js"></script>
   <script src="js/fighters/Rex.js"></script>
   <script src="js/fighters/Volt.js"></script>
   <script src="js/fighters/Titan.js"></script>
+  <script src="js/fighters/OverlordTitan.js"></script>
+  <script src="js/stages/GraffitiStrip.js"></script>
+  <script src="js/stages/CyberJunk.js"></script>
+  <script src="js/stages/NeonDocks.js"></script>
+  <script src="js/stages/DemonShrine.js"></script>
+  <script src="js/stages/AstralCore.js"></script>
   <script src="js/stages/NeonAlley.js"></script>
   <script src="js/stages/AbandonedArcade.js"></script>
   <script src="js/stages/SkylineRooftop.js"></script>
-  <script src="js/stages/AstralCore.js"></script>
   <script src="js/stages/StageManager.js"></script>
+  <script src="js/core/Player.js"></script>
   <script src="js/core/Camera.js"></script>
   <script src="js/core/InputManager.js"></script>
   <script src="js/ui/UIManager.js"></script>

@@ -24,52 +24,71 @@ window.NeonRumble = window.NeonRumble || {};
       this.isTrainingMode = false;
       this.isVsCpuMode = true;
 
-      // Progressive 4-Stage Hero Campaign Ladder (Ardra as exclusive protagonist)
+      // Progressive 6-Stage Hero Campaign Ladder with Colossal Final Boss
       this.isCampaignMode = true;
-      this.campaignStage = 0; // 0 to 3
+      this.campaignStage = 0;
       this.campaignLadder = [
         {
           stageIndex: 1,
-          stageKey: 'NeonAlley',
-          stageName: 'NEON ALLEY',
-          villainClass: 'Rex',
-          villainName: 'REX',
-          villainTitle: 'THE IRON BRAWLER',
-          villainColor: '#cc2233'
+          stageKey: 'GraffitiStrip',
+          stageName: 'GRAFFITI STRIP',
+          villainClass: 'RedOni',
+          villainName: 'RED ONI',
+          villainTitle: 'THE HORNED BRAWLER',
+          villainColor: '#e62020'
         },
         {
           stageIndex: 2,
-          stageKey: 'AbandonedArcade',
-          stageName: 'ABANDONED ARCADE',
-          villainClass: 'Volt',
-          villainName: 'VOLT',
-          villainTitle: 'THE CYBER SPARK',
-          villainColor: '#00f0ff'
+          stageKey: 'CyberJunk',
+          stageName: 'CYBER JUNKYARD',
+          villainClass: 'VoltMummy',
+          villainName: 'VOLT MUMMY',
+          villainTitle: 'THE BATTERY PUNK',
+          villainColor: '#ffea00'
         },
         {
           stageIndex: 3,
-          stageKey: 'SkylineRooftop',
-          stageName: 'SKYLINE ROOFTOP',
-          villainClass: 'Titan',
-          villainName: 'TITAN',
-          villainTitle: 'THE ARMORED JUGGERNAUT',
-          villainColor: '#d49b38'
+          stageKey: 'NeonDocks',
+          stageName: 'NEON DOCKS',
+          villainClass: 'NoirDoll',
+          villainName: 'NOIR DOLL',
+          villainTitle: 'THE GOTHIC LOLITA',
+          villainColor: '#ffffff'
         },
         {
           stageIndex: 4,
+          stageKey: 'DemonShrine',
+          stageName: 'DEMON SHRINE PAGODA',
+          villainClass: 'JesterGhost',
+          villainName: 'JESTER GHOST',
+          villainTitle: 'THE TRICKSTER PHANTOM',
+          villainColor: '#ff6600'
+        },
+        {
+          stageIndex: 5,
           stageKey: 'AstralCore',
-          stageName: 'ASTRAL CORE (FINAL BOSS)',
-          villainClass: 'Ardra',
-          villainName: 'SHADOW ARDRA',
-          villainTitle: 'THE ASTRAL SHADOW',
-          villainColor: '#ff0055',
-          isMirror: true
+          stageName: 'BLOOD ASTRAL RIFT',
+          villainClass: 'HornedDemon',
+          villainName: 'LILITH',
+          villainTitle: 'THE DEMON QUEEN',
+          villainColor: '#e61a38'
+        },
+        {
+          stageIndex: 6,
+          stageKey: 'AstralCore',
+          stageName: 'QUANTUM SINGULARITY VOID',
+          villainClass: 'OverlordTitan',
+          villainName: 'OVERLORD TITAN',
+          villainTitle: 'FINAL BOSS: THE COLOSSAL JUGGERNAUT',
+          villainColor: '#ff2200',
+          isBoss: true
         }
       ];
 
       // Active Fighters
       this.p1 = null;
       this.p2 = null;
+      this.player = null; // Free-roam 8-way player instance
 
       // Transition Timers
       this.transitionTimer = 0;
@@ -107,9 +126,9 @@ window.NeonRumble = window.NeonRumble || {};
           this.music.playTrack('MENU');
         } else if (newState === 'CHAR_SELECT' || newState === 'STAGE_SELECT') {
           this.music.playTrack('CHAR_SELECT');
-        } else if (newState === 'FIGHTING' || newState === 'ROUND_INTRO' || newState === 'TRAINING') {
+        } else if (newState === 'FIGHTING' || newState === 'ROUND_INTRO' || newState === 'TRAINING' || newState === 'FREE_ROAM') {
           const sKey = this.stageMgr.currentStageKey;
-          if (sKey === 'NeonAlley') this.music.playTrack('STAGE_1');
+          if (sKey === 'GraffitiStrip' || sKey === 'NeonAlley') this.music.playTrack('STAGE_1');
           else if (sKey === 'AbandonedArcade') this.music.playTrack('STAGE_2');
           else this.music.playTrack('STAGE_3');
         } else if (newState === 'MATCH_VICTORY') {
@@ -132,9 +151,13 @@ window.NeonRumble = window.NeonRumble || {};
         return;
       }
 
-      // 2. PAUSE TOGGLE (ESC during combat or training)
+      // 2. PAUSE TOGGLE & RETURN (ESC during combat, free roam, or training)
       if (code === 'Escape') {
-        if (this.state === 'FIGHTING' || this.state === 'TRAINING') {
+        if (this.state === 'FREE_ROAM') {
+          this.setState('TITLE');
+          if (this.sfx) this.sfx.playUI('select');
+          return;
+        } else if (this.state === 'FIGHTING' || this.state === 'TRAINING') {
           this.setState('PAUSE');
           if (this.sfx) this.sfx.playUI('select');
           return;
@@ -175,6 +198,8 @@ window.NeonRumble = window.NeonRumble || {};
             this.isVsCpuMode = true; // Single player focus!
             this.inputs.aiMode = 'SPARRING';
             this.setState('CHAR_SELECT');
+          } else if (choice.includes('FREE ROAM') || choice.includes('DOJO')) {
+            this.startFreeRoam();
           } else if (choice.includes('TRAINING')) {
             this.isCampaignMode = false;
             this.isTrainingMode = true;
@@ -220,14 +245,7 @@ window.NeonRumble = window.NeonRumble || {};
         } else if (code === 'KeyF' || code === 'Enter' || code === 'KeyJ') {
           if (this.sfx) this.sfx.playUI('select');
           const stagePick = this.menus.stagesList[this.menus.stageIndex];
-          if (stagePick === 'Random') {
-            this.stageMgr.setRandomStage();
-          } else {
-            this.stageMgr.setStage(stagePick);
-          }
-
-          // Initialize Match Fighters
-          this.startNewMatch();
+          this.startStageFight(stagePick);
         }
         return;
       }
@@ -352,7 +370,7 @@ window.NeonRumble = window.NeonRumble || {};
     }
 
     startCampaignStage(stageIndex) {
-      this.campaignStage = Math.max(0, Math.min(3, stageIndex));
+      this.campaignStage = Math.max(0, Math.min(this.campaignLadder.length - 1, stageIndex));
       const step = this.campaignLadder[this.campaignStage];
 
       // Set arena stage
@@ -374,8 +392,16 @@ window.NeonRumble = window.NeonRumble || {};
         this.p2.title = 'THE ASTRAL SHADOW';
         this.p2.superPopupText = 'DEATH TONGUE LASH!!!';
       } else {
-        const vClass = window.NeonRumble[step.villainClass];
+        const vClass = window.NeonRumble[step.villainClass] || window.NeonRumble.Titan;
         this.p2 = new vClass(2, { groundY: 460, x: 680, facing: -1 });
+      }
+
+      // Configure Final Boss flags & AI mode
+      if (step.isBoss || this.p2.id === 'OverlordTitan') {
+        this.p2.isBoss = true;
+        this.inputs.aiMode = 'BOSS';
+      } else {
+        this.inputs.aiMode = 'SPARRING';
       }
 
       this.p1RoundsWon = 0;
@@ -384,6 +410,21 @@ window.NeonRumble = window.NeonRumble || {};
       this.currentRound = 1;
 
       this.startRound(1);
+    }
+
+    startStageFight(stagePick) {
+      this.isCampaignMode = true;
+      this.isVsCpuMode = true;
+      this.isTrainingMode = false;
+
+      let targetIdx = 0;
+      if (stagePick === 'Random') {
+        targetIdx = Math.floor(Math.random() * this.campaignLadder.length);
+      } else {
+        const found = this.campaignLadder.findIndex(s => s.stageKey === stagePick);
+        targetIdx = found !== -1 ? found : 0;
+      }
+      this.startCampaignStage(targetIdx);
     }
 
     startTraining() {
@@ -401,6 +442,16 @@ window.NeonRumble = window.NeonRumble || {};
       this.setState('TRAINING');
       this.p1.superMeter = 100;
       this.p2.superMeter = 100;
+    }
+
+    startFreeRoam() {
+      this.isCampaignMode = false;
+      this.isTrainingMode = false;
+      this.isVsCpuMode = false;
+      this.stageMgr.setStage('GraffitiStrip');
+      this.player = new window.NeonRumble.Player(480, 280);
+      this.setState('FREE_ROAM');
+      if (this.sfx) this.sfx.playUI('ready');
     }
 
     startNewMatch() {
@@ -440,8 +491,18 @@ window.NeonRumble = window.NeonRumble || {};
       this.setState('ROUND_INTRO');
 
       const step = this.isCampaignMode ? this.campaignLadder[this.campaignStage] : null;
-      const stageHeading = step ? `STAGE ${this.campaignStage + 1}: ${step.villainName}` : `ROUND ${roundNumber}`;
-      const subtitle = (roundNumber === 1 && step) ? step.stageName : '';
+      let stageHeading;
+      let subtitle;
+
+      if (step && step.isBoss) {
+        stageHeading = roundNumber === 1 ? `⚠️ BOSS BATTLE: ${step.villainName} ⚠️` : `FINAL BOSS: ROUND ${roundNumber}`;
+        subtitle = 'DEFEAT THE COLOSSAL JUGGERNAUT!';
+        if (this.camera) this.camera.addShake(22);
+      } else {
+        stageHeading = step ? `STAGE ${this.campaignStage + 1}: ${step.villainName}` : `ROUND ${roundNumber}`;
+        subtitle = (roundNumber === 1 && step) ? step.stageName : '';
+      }
+
       const phrase = roundNumber === 1 ? stageHeading : (roundNumber === 2 ? 'ROUND 2' : 'FINAL ROUND');
 
       this.ui.showAnnouncement(phrase, subtitle, 75);
@@ -469,6 +530,14 @@ window.NeonRumble = window.NeonRumble || {};
       this.inputs.update();
       this.particles.update();
       this.combos.update();
+
+      if (this.state === 'FREE_ROAM') {
+        if (this.player) {
+          const combinedKeys = Object.assign({}, this.inputs.keysDown, this.inputs.touchState);
+          this.player.update(combinedKeys);
+        }
+        return;
+      }
 
       if (this.state === 'FIGHTING' || this.state === 'TRAINING' || this.state === 'ROUND_END' || this.state === 'ROUND_INTRO') {
         const stage = this.stageMgr.currentStage;
@@ -537,7 +606,7 @@ window.NeonRumble = window.NeonRumble || {};
 
             if (this.matchWinner === 1 && this.isCampaignMode) {
               // Ardra defeated this stage's villain!
-              if (this.campaignStage < 3) {
+              if (this.campaignStage < this.campaignLadder.length - 1) {
                 const currentVillain = this.campaignLadder[this.campaignStage].villainName;
                 const nextStep = this.campaignLadder[this.campaignStage + 1];
                 this.ui.showAnnouncement(
@@ -547,12 +616,16 @@ window.NeonRumble = window.NeonRumble || {};
                 );
                 if (this.sfx) this.sfx.playUI('ready');
 
-                setTimeout(() => {
-                  this.startCampaignStage(this.campaignStage + 1);
-                }, 2200);
+                this.setState('STAGE_CLEAR');
+                this.transitionTimer = 0;
                 return;
               } else {
-                // Grand Victory! Shadow Ardra in Astral Core defeated!
+                // Grand Victory! Final Boss Overlord Titan Defeated!
+                this.ui.showAnnouncement(
+                  'FINAL BOSS DEFEATED!',
+                  'ARDRA RESTORED THE METROPOLIS! ARCADE CHAMPION!',
+                  160
+                );
                 this.setState('MATCH_VICTORY');
               }
             } else {
@@ -563,6 +636,15 @@ window.NeonRumble = window.NeonRumble || {};
             // Next Round in current match
             this.startRound(this.currentRound + 1);
           }
+        }
+      }
+
+      // Smooth Stage Clear Transition to Next Gauntlet Stage
+      if (this.state === 'STAGE_CLEAR') {
+        this.transitionTimer++;
+        if (this.transitionTimer >= 130) {
+          this.transitionTimer = 0;
+          this.startCampaignStage(this.campaignStage + 1);
         }
       }
     }
@@ -693,11 +775,43 @@ window.NeonRumble = window.NeonRumble || {};
         return;
       }
 
+      // FREE ROAM DOJO (ARDRA) RENDERING
+      if (this.state === 'FREE_ROAM') {
+        // 1. Stage Background (Graffiti Strip)
+        this.stageMgr.draw(ctx, this.camera, 1);
+
+        // 2. Arena Boundary visual guide (subtle dashed neon guide)
+        ctx.save();
+        ctx.strokeStyle = 'rgba(0, 240, 255, 0.35)';
+        ctx.lineWidth = 2;
+        ctx.setLineDash([8, 6]);
+        ctx.strokeRect(30, 95, 900, 420);
+
+        // Corner boundary brackets
+        ctx.setLineDash([]);
+        ctx.strokeStyle = '#ff0077';
+        ctx.lineWidth = 3;
+        ctx.beginPath(); ctx.moveTo(30, 115); ctx.lineTo(30, 95); ctx.lineTo(50, 95); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(910, 95); ctx.lineTo(930, 95); ctx.lineTo(930, 115); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(30, 495); ctx.lineTo(30, 515); ctx.lineTo(50, 515); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(910, 515); ctx.lineTo(930, 515); ctx.lineTo(930, 495); ctx.stroke();
+        ctx.restore();
+
+        // 3. Render Hero Ardra
+        if (this.player) {
+          this.player.draw(ctx);
+        }
+
+        // 4. Free Roam HUD and Telemetry Overlay
+        this.drawFreeRoamHUD(ctx);
+        return;
+      }
+
       // Fighting Arena Rendering with Dynamic Camera
       this.camera.applyTransform(ctx);
 
-      // 1. Stage Background
-      this.stageMgr.draw(ctx, this.camera);
+      // 1. Stage Background (With dynamic round-sensitive colors and lighting)
+      this.stageMgr.draw(ctx, this.camera, this.currentRound);
 
       // 2. Projectiles
       this.projectiles.draw(ctx);
@@ -737,6 +851,79 @@ window.NeonRumble = window.NeonRumble || {};
       } else if (this.state === 'MATCH_VICTORY') {
         this.menus.drawVictory(ctx, this.matchWinner, this.matchWinner === 1 ? this.p1 : this.p2);
       }
+    }
+
+    drawFreeRoamHUD(ctx) {
+      if (!this.player) return;
+      ctx.save();
+
+      // Top Header Banner
+      ctx.textAlign = 'center';
+      ctx.font = 'bold 18px "Press Start 2P", monospace';
+      ctx.fillStyle = '#ff0077';
+      ctx.shadowColor = '#ff0077';
+      ctx.shadowBlur = 12;
+      ctx.fillText('★ ARDRA FREE ROAM DOJO ★', 480, 42);
+
+      ctx.font = '10px "Press Start 2P", monospace';
+      ctx.fillStyle = '#00f0ff';
+      ctx.shadowColor = '#00f0ff';
+      ctx.shadowBlur = 8;
+      ctx.fillText('8-WAY FLUID OMNIDIRECTIONAL MOVEMENT & PHYSICS', 480, 68);
+      ctx.shadowBlur = 0;
+
+      // Telemetry Box (Bottom Left)
+      const tX = 35;
+      const tY = 425;
+      const tW = 310;
+      const tH = 80;
+
+      ctx.fillStyle = 'rgba(10, 12, 24, 0.88)';
+      ctx.fillRect(tX, tY, tW, tH);
+      ctx.strokeStyle = '#00f0ff';
+      ctx.lineWidth = 1.5;
+      ctx.strokeRect(tX, tY, tW, tH);
+
+      const spd = Math.hypot(this.player.vx, this.player.vy);
+      const isRun = this.player.state === 'RUN';
+
+      ctx.textAlign = 'left';
+      ctx.font = 'bold 10px "Press Start 2P", monospace';
+      ctx.fillStyle = '#ffd700';
+      ctx.fillText('TELEMETRY', tX + 12, tY + 20);
+
+      ctx.font = '10px "Share Tech Mono", monospace';
+      ctx.fillStyle = isRun ? '#ff0077' : '#00f0ff';
+      ctx.fillText(`STATE:  [${this.player.state}]`, tX + 12, tY + 38);
+
+      ctx.fillStyle = '#e0e6ed';
+      ctx.fillText(`SPEED:  ${spd.toFixed(2)} / ${this.player.maxSpeed.toFixed(2)} px/f`, tX + 12, tY + 54);
+      ctx.fillText(`VECTOR: vx:${this.player.vx.toFixed(2)} vy:${this.player.vy.toFixed(2)} | FACING: ${this.player.facing > 0 ? 'RIGHT ►' : 'LEFT ◄'}`, tX + 12, tY + 70);
+
+      // Controls Box (Bottom Right)
+      const cX = 615;
+      const cY = 425;
+      const cW = 310;
+      const cH = 80;
+
+      ctx.fillStyle = 'rgba(10, 12, 24, 0.88)';
+      ctx.fillRect(cX, cY, cW, cH);
+      ctx.strokeStyle = '#ff0077';
+      ctx.lineWidth = 1.5;
+      ctx.strokeRect(cX, cY, cW, cH);
+
+      ctx.font = 'bold 10px "Press Start 2P", monospace';
+      ctx.fillStyle = '#ffd700';
+      ctx.fillText('CONTROLS', cX + 12, cY + 20);
+
+      ctx.font = '10px "Share Tech Mono", monospace';
+      ctx.fillStyle = '#ffffff';
+      ctx.fillText('MOVE:   [W/A/S/D] or [ARROWS] 8-Way', cX + 12, cY + 38);
+      ctx.fillText('PHYSICS: Inertia • Damping • Clamp', cX + 12, cY + 54);
+      ctx.fillStyle = '#ffcc00';
+      ctx.fillText('EXIT:   [ESC] Return to Menu', cX + 12, cY + 70);
+
+      ctx.restore();
     }
   }
 

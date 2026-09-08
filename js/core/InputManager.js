@@ -46,6 +46,7 @@ window.NeonRumble = window.NeonRumble || {};
         left: false, right: false, up: false, down: false,
         light: false, heavy: false, special: false, super: false, block: false
       };
+      this.touchEnabledByUser = true;
 
       this.setupListeners();
       this.setupTouchControls();
@@ -132,9 +133,28 @@ window.NeonRumble = window.NeonRumble || {};
       const toggleBtn = document.getElementById('btn-touch-toggle');
       if (toggleBtn) {
         toggleBtn.addEventListener('click', () => {
-          const isHidden = touchContainer.classList.toggle('touch-hidden');
-          toggleBtn.textContent = isHidden ? '📱 TOUCH: OFF' : '📱 TOUCH: ON';
+          this.touchEnabledByUser = !this.touchEnabledByUser;
+          toggleBtn.textContent = this.touchEnabledByUser ? '📱 TOUCH: ON' : '📱 TOUCH: OFF';
+          this.syncTouchVisibility();
         });
+      }
+
+      this.syncTouchVisibility();
+    }
+
+    syncTouchVisibility() {
+      const touchContainer = document.getElementById('touch-controls');
+      if (!touchContainer) return;
+
+      const gs = window.NeonRumble.GameState;
+      const state = gs ? gs.state : 'BOOT';
+      // Touch controls only appear in the combat zone (fighting, training, free roam dojo, round intro/end)
+      const inCombatZone = ['FIGHTING', 'TRAINING', 'FREE_ROAM', 'ROUND_INTRO', 'ROUND_END'].includes(state);
+
+      if (inCombatZone && this.touchEnabledByUser) {
+        touchContainer.classList.remove('touch-hidden');
+      } else {
+        touchContainer.classList.add('touch-hidden');
       }
     }
 
@@ -161,6 +181,7 @@ window.NeonRumble = window.NeonRumble || {};
       });
 
       this.aiTimer++;
+      this.syncTouchVisibility();
     }
 
     getP1Input() {
@@ -185,7 +206,8 @@ window.NeonRumble = window.NeonRumble || {};
         heavy: this.touchState.heavy || heavyBuffered || this.isPressed(b.heavy),
         special: this.touchState.special || specialBuffered || this.isPressed(b.special),
         super: this.touchState.super || superBuffered || this.isPressed(b.super),
-        block: this.touchState.block || this.isPressed(b.block)
+        block: this.touchState.block || this.isPressed(b.block),
+        run: this.isPressed(['ShiftLeft', 'ShiftRight', 'KeyZ', 'z', 'Z'])
       };
     }
 
@@ -211,7 +233,8 @@ window.NeonRumble = window.NeonRumble || {};
           heavy: heavyBuffered || this.isPressed(b.heavy),
           special: specialBuffered || this.isPressed(b.special),
           super: superBuffered || this.isPressed(b.super),
-          block: this.isPressed(b.block)
+          block: this.isPressed(b.block),
+          run: this.isPressed(['ShiftRight', 'Numpad0'])
         };
       }
 
@@ -240,20 +263,87 @@ window.NeonRumble = window.NeonRumble || {};
         base.block = true;
         return base;
       }
+      if (this.aiMode === 'BOSS' && f1 && f2) {
+        // Legendary Final Boss AI: Aggressive, relentless juggernaut with counter-striking and hyper armor
+        const dist = Math.abs(f1.x - f2.x);
+        const playerIsAttacking = (f1.state && f1.state.startsWith('ATTACK_'));
+
+        // 1. Smart Dynamic Guard / Hyper-Armor Counter
+        if (playerIsAttacking && dist < 120) {
+          if (Math.random() < 0.48) {
+            base.block = true;
+          } else if (Math.random() < 0.35) {
+            // Hyper armor counter-blow!
+            base.heavy = true;
+          }
+        }
+
+        // 2. Super Attack Readiness
+        if (f2.superMeter >= 100 && (dist < 260 || playerIsAttacking)) {
+          if (Math.random() < 0.28) {
+            base.super = true;
+            return base;
+          }
+        }
+
+        // 3. Movement & Spacing
+        if (dist > 150) {
+          // Relentless forward march / bull-rush sprint
+          if (f1.x > f2.x) base.right = true;
+          else base.left = true;
+          if (Math.random() < 0.55) base.run = true;
+          // Jump crush when far
+          if (dist > 280 && Math.random() < 0.08) base.up = true;
+        } else if (dist < 85) {
+          // Close quarters dominance
+          if (f2.superMeter >= 25 && Math.random() < 0.16) {
+            base.special = true; // Quake Stomp
+          } else if (Math.random() < 0.28) {
+            base.heavy = true; // Colossal Smashing Blow
+          } else if (Math.random() < 0.32) {
+            base.light = true; // Heavy jab / sweep
+          } else if (Math.random() < 0.18) {
+            base.down = true;
+            base.light = true; // Low kick
+          } else if (Math.random() < 0.22) {
+            base.block = true;
+          }
+        } else {
+          // Mid-range pressure (85 - 150px)
+          if (f1.x > f2.x) base.right = true;
+          else base.left = true;
+          if (f2.superMeter >= 25 && Math.random() < 0.14) {
+            base.special = true;
+          } else if (Math.random() < 0.22) {
+            base.heavy = true;
+          } else if (Math.random() < 0.15) {
+            base.light = true;
+          }
+        }
+
+        return base;
+      }
+
       if (this.aiMode === 'SPARRING' && f1 && f2) {
         // Smart arcade sparring AI
         const dist = Math.abs(f1.x - f2.x);
 
-        if (dist > 160) {
-          // Approach
+        if (dist > 180) {
+          // Approach with occasional sprint
           if (f1.x > f2.x) base.right = true;
           else base.left = true;
-        } else if (dist < 70) {
+          if (dist > 220 && Math.random() < 0.35) base.run = true;
+        } else if (dist < 75) {
           // Close combat
           if (f2.superMeter >= 100 && Math.random() < 0.1) {
             base.super = true;
           } else if (f2.superMeter >= 25 && Math.random() < 0.08) {
             base.special = true;
+          } else if (Math.random() < 0.14) {
+            // Forward thrust kick
+            if (f1.x > f2.x) base.right = true;
+            else base.left = true;
+            base.light = true;
           } else if (Math.random() < 0.15) {
             base.heavy = true;
           } else if (Math.random() < 0.25) {
