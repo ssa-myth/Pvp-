@@ -88,6 +88,9 @@ window.NeonRumble = window.NeonRumble || {};
         const vib = Math.sin(t * 1.6) * 0.07;
         sx = 1.0 + vib;
         sy = 1.0 - vib;
+      } else if (state === 'DODGE') {
+        // Agile evasive slip & lean deformation
+        sx = 0.88; sy = 1.10;
       } else if (state === 'HIT_LIGHT') {
         sx = 0.93; sy = 1.09;
       } else if (state === 'HIT_HEAVY' || state === 'KNOCKBACK') {
@@ -781,10 +784,19 @@ window.NeonRumble = window.NeonRumble || {};
         armR.x = 24;
         armL.x = 16;
       } else if (state === 'ATTACK_SUPER') {
-        torsoAngle = 0.35;
-        armR.angle = 1.6;
-        armR.x = 34;
-        armL.angle = -0.8;
+        if (f.stateTimer < 40) {
+          torsoAngle = -0.18;
+          armR.angle = 1.4;
+          armR.x = 26;
+          armL.angle = -1.2;
+          armL.x = -8;
+        } else {
+          torsoAngle = 0.45;
+          armR.angle = 1.6;
+          armR.x = 44;
+          armL.angle = -0.8;
+          armL.x = -14;
+        }
       } else if (state === 'BLOCK' || state === 'BLOCK_STUN') {
         torsoAngle = -0.15;
         armL.angle = -1.2;
@@ -916,6 +928,101 @@ window.NeonRumble = window.NeonRumble || {};
       ctx.fillStyle = '#cc1818';
       ctx.fillRect(18, -2, 16, 16);
       ctx.restore();
+
+      // =========================================================================
+      // DEMON CHAIN BUSTER - Glowing Spiked Chain Harpoon & Flaming Stone Punch
+      // =========================================================================
+      if (state === 'ATTACK_SUPER') {
+        ctx.save();
+        const chainY = -50;
+        const opponentDist = f.caughtOpponent ? (f.caughtOpponent.x - f.x) * f.facing : null;
+        let chainLen = 0;
+        if (opponentDist !== null) {
+          chainLen = Math.max(30, opponentDist);
+        } else {
+          const launchP = Math.min(1.0, Math.max(0, (f.stateTimer - 8) / 16));
+          if (f.stateTimer < 24) {
+            chainLen = launchP * 210;
+          } else if (f.stateTimer < 48) {
+            chainLen = 210;
+          } else {
+            chainLen = Math.max(0, 210 * (1 - (f.stateTimer - 48) / 26));
+          }
+        }
+
+        if (chainLen > 15) {
+          // Draw heavy spiked iron/gold chain links
+          const linkSpacing = 14;
+          const numLinks = Math.floor(chainLen / linkSpacing);
+
+          ctx.shadowColor = '#ffaa00';
+          ctx.shadowBlur = flash ? 0 : 12;
+
+          for (let i = 1; i <= numLinks; i++) {
+            const lx = i * linkSpacing;
+            const linkSag = Math.sin((i / numLinks) * Math.PI) * (f.caughtOpponent ? 4 : 8);
+            const ly = chainY + linkSag;
+
+            ctx.strokeStyle = (i % 2 === 0) ? '#ffcc00' : '#8899aa';
+            ctx.lineWidth = 4;
+            ctx.strokeRect(lx - 6, ly - 4, 10, 8);
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(lx - 2, ly - 2, 3, 3);
+          }
+
+          // Chain barb / harpoon hook at tip
+          const tipX = chainLen;
+          const tipY = chainY;
+          ctx.fillStyle = '#ff3300';
+          ctx.beginPath();
+          ctx.moveTo(tipX + 16, tipY);
+          ctx.lineTo(tipX - 4, tipY - 9);
+          ctx.lineTo(tipX + 2, tipY);
+          ctx.lineTo(tipX - 4, tipY + 9);
+          ctx.closePath();
+          ctx.fill();
+
+          ctx.strokeStyle = '#ffff00';
+          ctx.lineWidth = 2;
+          ctx.stroke();
+
+          // If hero is caught, draw binding chain wrapping around target
+          if (f.caughtOpponent) {
+            ctx.strokeStyle = '#ffcc00';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.ellipse(tipX, tipY + 6, 16, 26, 0.2, 0, Math.PI * 2);
+            ctx.stroke();
+          }
+        }
+
+        // At frame 40+ (Punch execution), draw massive flaming stone fist forward
+        if (f.stateTimer >= 40) {
+          const punchP = Math.min(1.0, (f.stateTimer - 40) / 10);
+          const fistX = 32 + punchP * 18;
+          ctx.save();
+          ctx.shadowColor = '#ff2200';
+          ctx.shadowBlur = 25;
+          // Blazing flame aura
+          ctx.fillStyle = 'rgba(255, 68, 0, 0.45)';
+          ctx.beginPath();
+          ctx.arc(fistX + 8, chainY, 28, 0, Math.PI * 2);
+          ctx.fill();
+          // Fiery burst rays
+          ctx.strokeStyle = '#ffdd00';
+          ctx.lineWidth = 3;
+          for (let a = 0; a < 6; a++) {
+            const angle = (a / 6) * Math.PI * 2 + f.animTimer * 0.2;
+            ctx.beginPath();
+            ctx.moveTo(fistX + 8 + Math.cos(angle) * 14, chainY + Math.sin(angle) * 14);
+            ctx.lineTo(fistX + 8 + Math.cos(angle) * 32, chainY + Math.sin(angle) * 32);
+            ctx.stroke();
+          }
+          ctx.restore();
+        }
+
+        ctx.restore();
+      }
     }
 
     // =========================================================================

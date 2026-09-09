@@ -14,7 +14,7 @@ window.NeonRumble = window.NeonRumble || {};
         name: 'VOLT',
         title: 'THE CYBER SPARK',
         playerNum: playerNum,
-        speed: 4.4,
+        speed: 2.7,
         jumpForce: -14.0,
         primaryColor: '#00f0ff',
         secondaryColor: '#ffea00',

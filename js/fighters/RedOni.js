@@ -15,17 +15,17 @@ window.NeonRumble = window.NeonRumble || {};
         name: 'RED ONI',
         title: 'THE HORNED BRAWLER',
         playerNum: playerNum,
-        speed: 3.8,
+        speed: 2.6,
         jumpForce: -13.0,
         primaryColor: '#e62020',
         secondaryColor: '#ff6699',
         groundY: config.groundY || 460,
         x: config.x || (playerNum === 1 ? 260 : 700),
         facing: config.facing || (playerNum === 1 ? 1 : -1),
-        superPopupText: 'DEMON CRUSHER!!!',
+        superPopupText: 'DEMON CHAIN BUSTER!!!',
         attacks: {
           SPECIAL: AttackData.REX_SPECIAL,
-          SUPER: AttackData.REX_SUPER
+          SUPER: AttackData.RED_ONI_SUPER || AttackData.REX_SUPER
         }
       });
     }
@@ -55,7 +55,7 @@ window.NeonRumble = window.NeonRumble || {};
 
     triggerSuper() {
       super.triggerSuper();
-      this.vx = this.facing * 11.0;
+      this.vx = 0;
     }
   }
 

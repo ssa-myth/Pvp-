@@ -15,7 +15,7 @@ window.NeonRumble = window.NeonRumble || {};
         name: 'JESTER GHOST',
         title: 'THE TRICKSTER PHANTOM',
         playerNum: playerNum,
-        speed: 4.5,
+        speed: 2.8,
         jumpForce: -15.0,
         primaryColor: '#ffffff',
         secondaryColor: '#ff6600',

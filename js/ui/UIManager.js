@@ -1215,6 +1215,35 @@ window.NeonRumble = window.NeonRumble || {};
         if (superBtn && superBtn.classList.contains('super-ready')) superBtn.classList.remove('super-ready');
       }
 
+      // Sync DOM virtual button badge for Special Attack
+      const specialBadge = document.getElementById('touch-special-cooldown');
+      const specialBtn = document.getElementById('btn-touch-special') || document.querySelector('.btn-special');
+      const specialProgress = specialBtn ? specialBtn.querySelector('.special-recharge-progress') : null;
+      const p1SpecialReady = (p1.specialCooldownTimer <= 0);
+
+      if (p1SpecialReady) {
+        if (specialBadge && specialBadge.textContent !== 'READY') specialBadge.textContent = 'READY';
+        if (specialBtn) {
+          if (!specialBtn.classList.contains('special-ready')) specialBtn.classList.add('special-ready');
+          if (specialBtn.classList.contains('special-colorless')) specialBtn.classList.remove('special-colorless');
+          if (specialBtn.classList.contains('special-recharging')) specialBtn.classList.remove('special-recharging');
+        }
+        if (specialProgress && specialProgress.style.height !== '100%') specialProgress.style.height = '100%';
+      } else {
+        const secLeft = (p1.specialCooldownTimer / 60).toFixed(1);
+        if (specialBadge && specialBadge.textContent !== `${secLeft}s`) specialBadge.textContent = `${secLeft}s`;
+        if (specialBtn) {
+          if (specialBtn.classList.contains('special-ready')) specialBtn.classList.remove('special-ready');
+          if (!specialBtn.classList.contains('special-colorless')) specialBtn.classList.add('special-colorless');
+          if (!specialBtn.classList.contains('special-recharging')) specialBtn.classList.add('special-recharging');
+        }
+        if (specialProgress) {
+          const maxCd = p1.specialCooldownMax || 240;
+          const pct = Math.max(0, Math.min(100, Math.round((1 - (p1.specialCooldownTimer / maxCd)) * 100)));
+          specialProgress.style.height = `${pct}%`;
+        }
+      }
+
       // =======================================================================
       // 5. COMBO COUNTERS
       // =======================================================================

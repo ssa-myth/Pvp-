@@ -45,7 +45,11 @@
         <div id="touch-actions">
           <div class="action-row top-row">
             <button id="btn-touch-block" class="action-btn btn-block" data-key="block">GUARD</button>
-            <button id="btn-touch-special" class="action-btn btn-special" data-key="special">SPECIAL</button>
+            <button id="btn-touch-special" class="action-btn btn-special special-ready" data-key="special">
+              <span class="special-label">SPECIAL</span>
+              <span id="touch-special-cooldown" class="cooldown-text special-cooldown-text">READY</span>
+              <div class="special-recharge-progress"></div>
+            </button>
             <button id="btn-touch-super" class="action-btn btn-super" data-key="super">
               <span class="super-label">SUPER</span>
               <span id="touch-super-cooldown" class="cooldown-text">READY</span>

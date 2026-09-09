@@ -479,13 +479,137 @@ html, body {
 }
 
 .btn-special {
-  width: 74px;
-  height: 48px;
+  width: 78px;
+  height: 50px;
   font-size: 9px;
-  background: linear-gradient(180deg, rgba(168, 32, 255, 0.4) 0%, rgba(100, 10, 180, 0.6) 100%);
-  border: 1.5px solid #a820ff;
-  color: #f0c4ff;
-  text-shadow: 0 0 6px #a820ff;
+  position: relative;
+  overflow: hidden;
+  border-radius: 12px;
+  transition: transform 0.08s, filter 0.25s, box-shadow 0.25s, border-color 0.25s;
+}
+
+/* ==========================================================================
+   SPECIAL ATTACK BUTTON: POWERED UP & GLOWING STATE
+   ========================================================================== */
+.btn-special.special-ready {
+  background: linear-gradient(180deg, rgba(168, 32, 255, 0.6) 0%, rgba(0, 240, 255, 0.65) 100%);
+  border: 2px solid #00f0ff;
+  color: #ffffff;
+  text-shadow: 0 0 8px #00f0ff, 0 0 16px #a820ff;
+  box-shadow: 0 0 14px rgba(0, 240, 255, 0.85), 0 0 28px rgba(168, 32, 255, 0.65), inset 0 0 10px rgba(0, 240, 255, 0.5);
+  animation: specialPoweredUpGlow 1.2s infinite alternate ease-in-out;
+  filter: none;
+}
+
+@keyframes specialPoweredUpGlow {
+  0% {
+    box-shadow: 0 0 10px rgba(0, 240, 255, 0.7), 0 0 20px rgba(168, 32, 255, 0.45), inset 0 0 8px rgba(0, 240, 255, 0.35);
+    border-color: #00f0ff;
+  }
+  100% {
+    box-shadow: 0 0 24px rgba(0, 240, 255, 1.0), 0 0 42px rgba(168, 32, 255, 0.9), inset 0 0 15px rgba(0, 240, 255, 0.75);
+    border-color: #ffffff;
+    color: #ffffff;
+  }
+}
+
+.special-label {
+  position: relative;
+  z-index: 3;
+  letter-spacing: 0.5px;
+}
+
+.special-cooldown-text {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: bold;
+  color: #00f0ff;
+  margin-top: 2px;
+  text-shadow: 0 0 6px #00f0ff;
+  z-index: 3;
+  position: relative;
+}
+
+/* ==========================================================================
+   SPECIAL ATTACK BUTTON: COLORLESS & RECHARGING ANIMATION STATE
+   ========================================================================== */
+.btn-special.special-colorless {
+  background: linear-gradient(180deg, #24242c 0%, #121218 100%) !important;
+  border: 1.5px solid #444452 !important;
+  color: #727282 !important;
+  text-shadow: none !important;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.8), inset 0 0 12px rgba(0, 0, 0, 0.7) !important;
+  filter: grayscale(100%) !important;
+}
+
+.btn-special.special-colorless .special-cooldown-text {
+  color: #888899 !important;
+  text-shadow: none !important;
+}
+
+/* Recharging Progress Fill Meter */
+.special-recharge-progress {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 0%;
+  background: linear-gradient(0deg, rgba(0, 240, 255, 0.35) 0%, rgba(168, 32, 255, 0.5) 100%);
+  border-top: 2px solid #00f0ff;
+  box-shadow: 0 0 10px rgba(0, 240, 255, 0.8);
+  pointer-events: none;
+  z-index: 1;
+  transition: height 0.05s linear;
+}
+
+/* Sweeping Electric Light Beam Animation across the Recharging Button */
+.btn-special.special-recharging::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -120%;
+  width: 80%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.28), transparent);
+  transform: skewX(-25deg);
+  animation: specialRechargeSweep 1.3s infinite linear;
+  pointer-events: none;
+  z-index: 2;
+}
+
+@keyframes specialRechargeSweep {
+  0% { left: -120%; }
+  100% { left: 220%; }
+}
+
+/* Circular / Radial Radar Pulse on Recharging */
+.btn-special.special-recharging::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle, rgba(0, 240, 255, 0.2) 0%, transparent 70%);
+  transform: translate(-50%, -50%);
+  animation: specialRadarPulse 1.4s infinite ease-out;
+  pointer-events: none;
+  z-index: 2;
+}
+
+@keyframes specialRadarPulse {
+  0% { transform: translate(-50%, -50%) scale(0.4); opacity: 0.8; }
+  100% { transform: translate(-50%, -50%) scale(1.6); opacity: 0; }
+}
+
+/* Instant Flash effect upon completing recharge */
+.btn-special.special-powerup-flash {
+  animation: powerupFlash 0.35s ease-out !important;
+}
+
+@keyframes powerupFlash {
+  0% { filter: brightness(2.8) contrast(1.4); transform: scale(1.08); }
+  100% { filter: none; transform: scale(1.0); }
 }
 
 .btn-super {

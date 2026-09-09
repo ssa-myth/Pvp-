@@ -14,7 +14,7 @@ window.NeonRumble = window.NeonRumble || {};
         name: 'REX',
         title: 'THE IRON BRAWLER',
         playerNum: playerNum,
-        speed: 3.9,
+        speed: 2.6,
         jumpForce: -13.2,
         primaryColor: '#cc2233',
         secondaryColor: '#ffaa00',

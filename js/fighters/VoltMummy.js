@@ -15,7 +15,7 @@ window.NeonRumble = window.NeonRumble || {};
         name: 'VOLT MUMMY',
         title: 'THE BATTERY PUNK',
         playerNum: playerNum,
-        speed: 4.6,
+        speed: 2.8,
         jumpForce: -14.4,
         primaryColor: '#ffea00',
         secondaryColor: '#e6dfcc',

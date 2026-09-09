@@ -597,6 +597,20 @@ window.NeonRumble = window.NeonRumble || {};
           osc.start(now + idx * 0.1);
           osc.stop(now + idx * 0.1 + 0.28);
         });
+      } else if (action === 'special_ready') {
+        // Ascending electric crystal chime for Special Attack power-up
+        [523.25, 659.25, 783.99, 1046.50].forEach((f, i) => {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(f, now + i * 0.045);
+          gain.gain.setValueAtTime(0.22, now + i * 0.045);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.045 + 0.28);
+          osc.connect(gain);
+          gain.connect(this.sfxGain);
+          osc.start(now + i * 0.045);
+          osc.stop(now + i * 0.045 + 0.3);
+        });
       } else if (action === 'super_ready') {
         // Power-up chord
         [440, 554, 659, 880].forEach((f, i) => {

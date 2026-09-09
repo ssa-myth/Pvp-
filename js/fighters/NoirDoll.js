@@ -15,7 +15,7 @@ window.NeonRumble = window.NeonRumble || {};
         name: 'NOIR DOLL',
         title: 'THE GOTHIC LOLITA',
         playerNum: playerNum,
-        speed: 4.4,
+        speed: 2.7,
         jumpForce: -13.8,
         primaryColor: '#ffffff',
         secondaryColor: '#181822',
@@ -25,7 +25,7 @@ window.NeonRumble = window.NeonRumble || {};
         superPopupText: 'BLACK ROSE SCYTHE!!!',
         attacks: {
           SPECIAL: AttackData.ARDRA_SPECIAL,
-          SUPER: AttackData.ARDRA_SUPER
+          SUPER: AttackData.NOIR_SUPER || AttackData.ARDRA_SUPER
         }
       });
     }

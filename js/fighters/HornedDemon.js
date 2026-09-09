@@ -15,7 +15,7 @@ window.NeonRumble = window.NeonRumble || {};
         name: 'LILITH',
         title: 'THE DEMON QUEEN',
         playerNum: playerNum,
-        speed: 4.7,
+        speed: 2.9,
         jumpForce: -14.6,
         primaryColor: '#9696a6',
         secondaryColor: '#e61a38',
@@ -25,7 +25,7 @@ window.NeonRumble = window.NeonRumble || {};
         superPopupText: 'HELLFIRE CARNIVAL!!!',
         attacks: {
           SPECIAL: AttackData.ARDRA_SPECIAL,
-          SUPER: AttackData.ARDRA_SUPER
+          SUPER: AttackData.LILITH_SUPER || AttackData.ARDRA_SUPER
         }
       });
     }

@@ -385,6 +385,7 @@ window.NeonRumble = window.NeonRumble || {};
           groundY: 460,
           x: 680,
           facing: -1,
+          speed: 2.8,
           primaryColor: '#ff0055',
           secondaryColor: '#ff3300'
         });
@@ -394,6 +395,23 @@ window.NeonRumble = window.NeonRumble || {};
       } else {
         const vClass = window.NeonRumble[step.villainClass] || window.NeonRumble.Titan;
         this.p2 = new vClass(2, { groundY: 460, x: 680, facing: -1 });
+      }
+
+      // Progressive Stage Difficulty Scaling (Stages 1 -> 6)
+      // Stage 1: Red Oni (100 HP, baseline intro)
+      // Stage 2: Volt Mummy (115 HP, electric agility)
+      // Stage 3: Noir Doll (135 HP, gothic scythe aggression)
+      // Stage 4: Jester Ghost (155 HP, evasive trickster)
+      // Stage 5: Lilith (180 HP, demonic hellfire queen)
+      // Stage 6: Overlord Titan (250 HP, colossal hyper-armor final boss)
+      const stageHPs = [100, 115, 135, 155, 180, 250];
+      const stageLvl = this.campaignStage + 1;
+      this.p2.stageNum = stageLvl;
+      this.p2.aiStageLevel = stageLvl;
+      if (!step.isBoss && this.p2.id !== 'OverlordTitan') {
+        this.p2.maxHealth = stageHPs[this.campaignStage] || 100;
+        this.p2.health = this.p2.maxHealth;
+        this.p2.ghostHealth = this.p2.maxHealth;
       }
 
       // Configure Final Boss flags & AI mode
@@ -560,6 +578,13 @@ window.NeonRumble = window.NeonRumble || {};
         this.p1.update(this.p2, p1Input, stage);
         this.p2.update(this.p1, p2Input, stage);
 
+        // Enforce strict combat zone containment for both characters
+        const stageB = (stage && stage.bounds) ? stage.bounds : { minX: 120, maxX: 1280 };
+        const p1Margin = Math.max(30, (this.p1.width || 44) * 0.5 + 6);
+        const p2Margin = Math.max(30, (this.p2.width || 44) * 0.5 + 6);
+        this.p1.x = Math.max(stageB.minX + p1Margin, Math.min(stageB.maxX - p1Margin, this.p1.x));
+        this.p2.x = Math.max(stageB.minX + p2Margin, Math.min(stageB.maxX - p2Margin, this.p2.x));
+
         // 3. Update Projectiles
         this.projectiles.update(stage);
 
@@ -654,22 +679,10 @@ window.NeonRumble = window.NeonRumble || {};
     // =========================================================================
     checkCombatCollisions() {
       // 1. P1 Melee Attack vs P2 Hurtbox
-      const p1Hitbox = this.p1.getActiveHitbox();
-      const p2Hurtbox = this.p2.getHurtbox();
-
-      if (p1Hitbox && p2Hurtbox && Box.checkOverlap(p1Hitbox, p2Hurtbox)) {
-        this.p1.hasHit = true;
-        this.p2.takeHit(this.p1.currentAttack, this.p1);
-      }
+      this.p1.checkHitAgainst(this.p2);
 
       // 2. P2 Melee Attack vs P1 Hurtbox
-      const p2Hitbox = this.p2.getActiveHitbox();
-      const p1Hurtbox = this.p1.getHurtbox();
-
-      if (p2Hitbox && p1Hurtbox && Box.checkOverlap(p2Hitbox, p1Hurtbox)) {
-        this.p2.hasHit = true;
-        this.p1.takeHit(this.p2.currentAttack, this.p2);
-      }
+      this.p2.checkHitAgainst(this.p1);
 
       // 3. Projectile Collisions
       this.projectiles.projectiles.forEach(proj => {

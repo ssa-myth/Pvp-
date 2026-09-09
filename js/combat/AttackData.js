@@ -280,6 +280,58 @@ window.NeonRumble = window.NeonRumble || {};
       level: 'SUPER',
       causesKnockdown: true,
       hitbox: new Box(5, -75, 120, 75, 'hit')
+    },
+    NOIR_SUPER: {
+      name: 'Black Rose Scythe',
+      startup: 8,
+      active: 28,
+      recovery: 22,
+      damage: 48,
+      chipDamage: 9,
+      knockback: { x: 11.0, y: -6.5 },
+      hitstun: 50,
+      blockstun: 25,
+      freezeFrames: 12,
+      meterCost: 100,
+      property: 'MID',
+      level: 'SUPER',
+      causesKnockdown: true,
+      hitbox: new Box(15, -75, 110, 75, 'hit')
+    },
+    LILITH_SUPER: {
+      name: 'Hellfire Carnival',
+      startup: 8,
+      active: 28,
+      recovery: 22,
+      damage: 50,
+      chipDamage: 10,
+      knockback: { x: 12.0, y: -7.0 },
+      hitstun: 52,
+      blockstun: 25,
+      freezeFrames: 13,
+      meterCost: 100,
+      property: 'MID',
+      level: 'SUPER',
+      causesKnockdown: true,
+      hitbox: new Box(15, -80, 115, 80, 'hit')
+    },
+    RED_ONI_SUPER: {
+      name: 'Demon Chain Buster',
+      startup: 8,
+      active: 38,
+      recovery: 28,
+      damage: 48,
+      chipDamage: 9,
+      knockback: { x: 13.0, y: -7.5 },
+      hitstun: 55,
+      blockstun: 25,
+      freezeFrames: 14,
+      meterCost: 100,
+      property: 'MID',
+      level: 'SUPER',
+      causesKnockdown: true,
+      isChainAttack: true,
+      hitbox: new Box(15, -60, 210, 44, 'hit')
     }
   };
 

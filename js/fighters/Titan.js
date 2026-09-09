@@ -14,7 +14,7 @@ window.NeonRumble = window.NeonRumble || {};
         name: 'TITAN',
         title: 'THE ARMORED JUGGERNAUT',
         playerNum: playerNum,
-        speed: 3.2,
+        speed: 2.2,
         jumpForce: -12.4,
         primaryColor: '#d49b38',
         secondaryColor: '#00ff66',
@@ -48,8 +48,7 @@ window.NeonRumble = window.NeonRumble || {};
       setTimeout(() => {
         const pm = window.NeonRumble.ProjectileManager;
         if (pm) {
-          // 2 erupting spikes
-          [-60, 60, 140].forEach((offset, idx) => {
+          [-40, 60, 140].forEach((offset, idx) => {
             setTimeout(() => {
               pm.spawn({
                 owner: this.playerNum,
@@ -65,7 +64,7 @@ window.NeonRumble = window.NeonRumble || {};
                 hitstun: 40,
                 life: 20,
                 width: 50,
-                height: 120,
+                height: 75,
                 color: '#d49b38'
               });
             }, idx * 100);
@@ -81,7 +80,7 @@ window.NeonRumble = window.NeonRumble || {};
         id: 'OverlordTitan',
         name: 'OVERLORD TITAN',
         title: 'FINAL BOSS: THE COLOSSAL JUGGERNAUT',
-        speed: 3.6,
+        speed: 2.3,
         jumpForce: -13.5,
         primaryColor: '#ff2200',
         secondaryColor: '#ffcc00',
@@ -148,8 +147,7 @@ window.NeonRumble = window.NeonRumble || {};
       setTimeout(() => {
         const pm = window.NeonRumble.ProjectileManager;
         if (pm) {
-          // 4 massive erupting earth spikes across the arena
-          [-120, -40, 60, 160].forEach((offset, idx) => {
+          [-40, 60, 160].forEach((offset, idx) => {
             setTimeout(() => {
               pm.spawn({
                 owner: this.playerNum,
@@ -164,8 +162,8 @@ window.NeonRumble = window.NeonRumble || {};
                 knockback: { x: 6.0, y: -9.0 },
                 hitstun: 45,
                 life: 25,
-                width: 60,
-                height: 140,
+                width: 55,
+                height: 75,
                 color: '#ff3300'
               });
             }, idx * 80);

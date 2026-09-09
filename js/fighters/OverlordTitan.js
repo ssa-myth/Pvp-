@@ -13,7 +13,7 @@ window.NeonRumble = window.NeonRumble || {};
           id: 'OverlordTitan',
           name: 'OVERLORD TITAN',
           title: 'FINAL BOSS: THE COLOSSAL JUGGERNAUT',
-          speed: 3.6,
+          speed: 2.3,
           jumpForce: -13.5,
           primaryColor: '#ff2200',
           secondaryColor: '#ffcc00',
@@ -80,8 +80,8 @@ window.NeonRumble = window.NeonRumble || {};
         setTimeout(() => {
           const pm = window.NeonRumble.ProjectileManager;
           if (pm) {
-            // 4 massive erupting earth spikes across the arena
-            [-120, -40, 60, 160].forEach((offset, idx) => {
+            // Erupting earth spikes across the arena floor
+            [-40, 60, 160].forEach((offset, idx) => {
               setTimeout(() => {
                 pm.spawn({
                   owner: this.playerNum,
@@ -96,8 +96,8 @@ window.NeonRumble = window.NeonRumble || {};
                   knockback: { x: 6.0, y: -9.0 },
                   hitstun: 45,
                   life: 25,
-                  width: 60,
-                  height: 140,
+                  width: 55,
+                  height: 75,
                   color: '#ff3300'
                 });
               }, idx * 80);
